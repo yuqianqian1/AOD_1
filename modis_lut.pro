@@ -1,0 +1,74 @@
+pro modis_lut
+  igeom=0
+  sz_angle=[0,80]
+  sz_angle=interpol(sz_angle,21)
+  sa_angle=[0,180]
+  sa_angle=interpol(sa_angle,31)
+  vz_angle=[0,80]
+  vz_angle=interpol(vz_angle,21)
+  va_angle=0
+  month=9
+  day=1
+  idatm=2
+  iaer=1
+  v=0
+  aod=[0.01,0.25,0.5,1.0,1.5,2.0,3.0,5.0]
+  xps=0
+  xpp=-1000
+  iwave=42
+  inhomo=0
+  idirec=0
+  igroun=1
+  rapp=-2
+  openw,1,'D:/6s_novector/out.txt'
+  free_lun,1
+  openw,2,'D:/6s_novector/modis_lut_red.txt',width=8000
+  for aod_i=0,n_elements(aod)-1 do begin
+    for sz_i=0,n_elements(sz_angle)-1 do begin
+      for vz_i=0,n_elements(vz_angle)-1 do begin
+        for sa_i=0,n_elements(sa_angle)-1 do begin
+          openw,1,'D:/6s_novector/in.txt'
+          printf,1,igeom
+          printf,1,sz_angle[sz_i]
+          printf,1,sa_angle[sa_i]
+          printf,1,vz_angle[vz_i]
+          printf,1,va_angle
+          printf,1,month
+          printf,1,day
+          printf,1,idatm
+          printf,1,iaer
+          printf,1,v
+          printf,1,aod[aod_i]
+          printf,1,xps
+          printf,1,xpp
+          printf,1,iwave
+          printf,1,inhomo
+          printf,1,idirec
+          printf,1,igroun
+          printf,1,rapp
+          free_lun,1          
+          spawn,'D:/6s_novector/6s.exe<D:/6s_novector/in.txt>D:/6s_novector/out.txt',/hide
+          
+          openr,3,'D:/6s_novector/out.txt'
+          temp_str=''
+          skip_lun,3,105,/lines
+          readf,3,temp_str
+          temp_str_spl=strsplit(temp_str,/extract)
+          T_total=temp_str_spl[7]
+          skip_lun,3,5,/lines
+          readf,3,temp_str
+          temp_str_spl=strsplit(temp_str,/extract)
+          S_total=temp_str_spl[6]
+          skip_lun,3,2,/lines
+          readf,3,temp_str
+          temp_str_spl=strsplit(temp_str,/extract)
+          rou_total=temp_str_spl[5]   
+          free_lun,3
+          print,[rou_total,T_total,S_total,sz_angle[sz_i],vz_angle[vz_i],sa_angle[sa_i],aod[aod_i]]
+          printf,2,[rou_total,T_total,S_total,sz_angle[sz_i],vz_angle[vz_i],sa_angle[sa_i],aod[aod_i]]
+        endfor
+      endfor
+    endfor
+  endfor
+  free_lun,2
+end
